@@ -375,8 +375,8 @@ MonoBehaviour:
   enemiesPerSpawn: 1
   spawnPoints:
   - {fileID: 1802826575}
-  - {fileID: 1764490864}
   - {fileID: 206288723}
+  - {fileID: 1764490864}
   - {fileID: 1430835107}
   maxEnemies: 50
 --- !u!4 &233653217
@@ -1534,7 +1534,7 @@ SceneRoots:
   - {fileID: 374607157}
   - {fileID: 1663936744}
   - {fileID: 233653217}
-  - {fileID: 1802826575}
   - {fileID: 206288723}
+  - {fileID: 1802826575}
   - {fileID: 1764490864}
   - {fileID: 1430835107}
