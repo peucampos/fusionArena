@@ -135,7 +135,6 @@ public class GameManager : MonoBehaviour
                 // mas a regra "30 ganha 30" implica em 1 ponto por segundo, contado a cada 30s.
                 // Uma forma mais simples: A cada 30s, adiciona 'scorePer30Seconds' pontos.
                 AddScore(scorePer30Seconds);
-                Debug.Log($"Pontos adicionados por tempo! (Total passado: {(gameDuration - timeRemaining):F0}s)");
             }
         }
     }
