@@ -265,7 +265,7 @@ GameObject:
   - component: {fileID: 206288722}
   m_Layer: 0
   m_Name: SpawnBottom
-  m_TagString: Untagged
+  m_TagString: SpawnPoint
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -752,7 +752,7 @@ GameObject:
   - component: {fileID: 1430835106}
   m_Layer: 0
   m_Name: SpawnRight
-  m_TagString: Untagged
+  m_TagString: SpawnPoint
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1229,7 +1229,7 @@ GameObject:
   - component: {fileID: 1764490863}
   m_Layer: 0
   m_Name: SpawnLeft
-  m_TagString: Untagged
+  m_TagString: SpawnPoint
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1450,7 +1450,7 @@ GameObject:
   - component: {fileID: 1802826574}
   m_Layer: 0
   m_Name: SpawnTop
-  m_TagString: Untagged
+  m_TagString: SpawnPoint
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1533,8 +1533,8 @@ SceneRoots:
   - {fileID: 619394802}
   - {fileID: 374607157}
   - {fileID: 1663936744}
-  - {fileID: 233653217}
   - {fileID: 206288723}
   - {fileID: 1802826575}
   - {fileID: 1764490864}
   - {fileID: 1430835107}
+  - {fileID: 233653217}

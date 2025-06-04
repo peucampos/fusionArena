@@ -24,8 +24,7 @@ public class GameManager : MonoBehaviour
             Destroy(gameObject); // Destrói esta nova instância se já existir outra
             return;
         }
-        Instance = this;
-        DontDestroyOnLoad(gameObject); // Mantém o GameManager ativo entre cenas (opcional, dependendo do seu fluxo de jogo)
+        Instance = this;        
 
         Debug.Log("GameManager inicializado.");
     }
@@ -47,7 +46,7 @@ public class GameManager : MonoBehaviour
         // Por exemplo: gameOverPanel.SetActive(true);
 
         // Recarregar a cena atual após um atraso, ou carregar uma cena de Game Over
-        // StartCoroutine(ReloadSceneAfterDelay(2f));
+        StartCoroutine(ReloadSceneAfterDelay(2f));
     }
 
     // Exemplo de como você pode reiniciar a cena

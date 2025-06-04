@@ -165,10 +165,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7db02946ce197ab4f81e23d49ffdf825, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  initialMoveSpeed: 3
-  fastThresholdSpeed: 3.1
+  normalEnemySpeed: 3
+  smallEnemySpeed: 4
+  largeEnemySpeed: 2
+  largeThresholdSpeed: 2.5
   largeThresholdScale: 1.1
+  smallThresholdSpeed: 3.5
+  smallThresholdScale: 0.9
   initialEnemyColor: {r: 0, g: 1, b: 1, a: 1}
   smallEnemyColor: {r: 0.54509807, g: 1, b: 0, a: 1}
-  fastEnemyColor: {r: 0, g: 0.4, b: 1, a: 1}
+  normalEnemyColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   largeEnemyColor: {r: 0.6, g: 0, b: 1, a: 1}
+  maxScale: 1.5
+  smallScale: 0.75
+  initialScale: 1
