@@ -27,16 +27,10 @@ public class EnemyAI : MonoBehaviour
     // Os thresholds serão baseados nas próprias velocidades e escalas dos tipos.
 
     [Tooltip("Limite de tamanho/velocidade para ser considerado Grande (maior que normal).")]
-    // Ajustado para usar a velocidade LargeEnemySpeed como um critério.
-    // Vamos usar a velocidade LargeEnemySpeed para definir o limite inferior para Large.
-    [SerializeField] private float largeThresholdSpeed = 2.5f; // Velocidade acima de largeEnemySpeed para ser large por velocidade.
-    [Tooltip("Limite de tamanho para ser considerado Grande.")]
     [SerializeField] private float largeThresholdScale = 1.6f;
 
     [Tooltip("Limite de velocidade para ser considerado Pequeno (acima de normal).")]
     [SerializeField] private float smallThresholdSpeed = 3.5f; // Velocidade entre normal e smallEnemySpeed.
-    [Tooltip("Limite de tamanho para ser considerado Pequeno.")]
-    [SerializeField] private float smallThresholdScale = 0.9f;
 
     [Header("Configurações Visuais")]
     [Tooltip("Cor do inimigo inicial (default).")]
@@ -244,6 +238,12 @@ public class EnemyAI : MonoBehaviour
 
             transformedEnemy.SetMergingState(false, 0.8f);
             transformedEnemy.UpdateEnemyColor();
+
+            // --- PONTUAÇÃO: Ponto por cada fusão que acontecer ---
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.AddScore(GameManager.Instance.scorePerFusion);
+            }
             return;
         }
 
@@ -274,19 +274,7 @@ public class EnemyAI : MonoBehaviour
         EnemyAI loser = null;
 
         // Lógica de Pedra, Papel e Tesoura: Small (Pequeno) > Large (Grande) > Normal (Padrão) > Small
-        // Atenção: A ordem aqui define a "vitória" e deve ser circular.
-        // Small (mais rápido) vence Large (maior)
-        // Large (maior) vence Normal (padrão)
-        // Normal (padrão) vence Small (mais rápido) -- Invertido do Fast > Small. Agora Normal é o mais fraco no PPT?
-        // Se Normal vence Small, a ordem é: Normal > Small > Large > Normal
-        // Se Small vence Large, e Large vence Normal, e Normal vence Small, a ordem é:
-        // Small > Large
-        // Large > Normal
-        // Normal > Small
-        // Isso é uma cadeia.
-        // Se a ordem for: Normal (3f) -> Small (4.5f) -> Large (2.0f) -> Normal
-        // Normal (3f) > Small (4.5f) -> Fica estranho se Normal é mais lento.
-
+        
         // RE-DEFININDO A LÓGICA DE PPT PARA SUAS VELOCIDADES:
         // Vamos pensar na "força" do inimigo: Pequeno (rápido) > Grande (robusto) > Normal (equilibrado)
         // Pequeno (mais rápido) vence Grande (mais lento)
@@ -313,8 +301,16 @@ public class EnemyAI : MonoBehaviour
             enemy2.SetMergingState(false, 0.2f);
             return;
         }
+        else
+        {
+            // --- PONTUAÇÃO: Ponto por cada vez que um modificado destruir outro modificado ---
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.AddScore(GameManager.Instance.scorePerModifiedDestroyingModified);
+            }
+        }
 
-        Debug.Log($"REGRA 4: Batalha PPT: {winner.name} ({winner.GetEnemyType()}) venceu {loser.name} ({loser.GetEnemyType()})!");
+            Debug.Log($"REGRA 4: Batalha PPT: {winner.name} ({winner.GetEnemyType()}) venceu {loser.name} ({loser.GetEnemyType()})!");
         Debug.Log($"{loser.name} (Perdedor) se transformará no tipo do vencedor ({winner.GetEnemyType()}).");
 
         ApplyTransformation(loser, winner.GetEnemyType());

@@ -1,67 +1,142 @@
-// GameManager.cs
-
+using TMPro;
 using UnityEngine;
-using UnityEngine.SceneManagement; // Necessário para recarregar a cena ou carregar outra
+using UnityEngine.SceneManagement; // Certifique-se de que esta linha está presente
 
 public class GameManager : MonoBehaviour
 {
-    // Padrão Singleton: Garante que só existe uma instância do GameManager.
+    // Singleton pattern
     public static GameManager Instance { get; private set; }
 
-    // Variável global para a velocidade máxima do inimigo (usada em EnemyAI.SetSpeed)
-    // Se você não tiver um GameManager para isso, pode ser uma variável em EnemyAI ou em um ScriptableObject.
-    public static float globalMaxEnemySpeed = 7f; // Ajuste este valor conforme necessário
+    [Header("Configurações do Jogo")]
+    private bool gameStarted = false;
+    private bool gameOver = false;
 
-    // Flag para verificar se o jogo já terminou
-    private bool isGameOver = false;
+    // Variáveis de pontuação
+    [Header("Configurações de Pontuação")]
+    public int currentScore = 0; // Variável para armazenar a pontuação total
+    public int scorePerNormalEnemy = 1; // Pontos por inimigo normal ativo
+    public int scorePerModifiedEnemy = 2; // Pontos por inimigo modificado ativo
+    public int scorePerFusion = 3; // Pontos por fusão
+    public int scorePerModifiedDestroyingModified = 4; // Pontos por modificado destruir modificado
+    public int scorePer30Seconds = 30; // Pontos a cada 30 segundos (1 ponto por segundo de jogo a cada 30 segundos)
 
-    // Awake é chamado quando o script é carregado
+    [SerializeField] private EnemySpawner enemySpawner; // Referência ao EnemySpawner
+    [SerializeField] private TMP_Text score; // Referência ao componente de texto para exibir a pontuação
+
     private void Awake()
     {
-        // Implementação do Singleton
         if (Instance != null && Instance != this)
         {
-            Destroy(gameObject); // Destrói esta nova instância se já existir outra
-            return;
+            Destroy(gameObject);
         }
-        Instance = this;        
+        else
+        {
+            Instance = this;
+        }
+    }
 
-        Debug.Log("GameManager inicializado.");
+    private void Start()
+    {
+        StartGame();
+    }
+
+    private void StartGame()
+    {
+        gameStarted = true;
+        gameOver = false;
+        currentScore = 0; // Reseta a pontuação ao iniciar o jogo
+
+        // Inicia as corrotinas de pontuação
+        StartCoroutine(CalculateActiveEnemiesScoreRoutine());
+        StartCoroutine(CalculateTimeScoreRoutine());
+    }
+
+    private void Update()
+    {
+        if (!gameStarted || gameOver) return;
+
+        score.text = currentScore.ToString(); // Atualiza o texto da pontuação
+    }
+
+    public void GameOver()
+    {
+        if (gameOver) return; // Evita múltiplas chamadas
+
+        gameOver = true;
+        Debug.Log("Game Over! Sua pontuação final: " + currentScore);
+        
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
     /// <summary>
-    /// Método chamado quando o jogo deve terminar.
+    /// Adiciona pontos à pontuação total.
     /// </summary>
-    public void GameOver()
+    /// <param name="points">Quantidade de pontos a adicionar.</param>
+    public void AddScore(int points)
     {
-        if (isGameOver) return; // Evita múltiplas chamadas de Game Over
-
-        isGameOver = true;
-        Debug.Log("FIM DE JOGO!");
-
-        // Aqui você pode adicionar lógica para:
-        Time.timeScale = 0f; // Pausa o jogo
-
-        // Exibir uma tela de Game Over (você precisaria ter uma UI para isso)
-        // Por exemplo: gameOverPanel.SetActive(true);
-
-        // Recarregar a cena atual após um atraso, ou carregar uma cena de Game Over
-        StartCoroutine(ReloadSceneAfterDelay(2f));
+        if (!gameOver)
+        {
+            currentScore += points;
+            Debug.Log($"Pontuação atual: {currentScore}"); // Para debug
+            // Futuramente, você pode atualizar a UI aqui
+        }
     }
 
-    // Exemplo de como você pode reiniciar a cena
-    private System.Collections.IEnumerator ReloadSceneAfterDelay(float delay)
+    /// <summary>
+    /// Corrotina para calcular e adicionar pontos de inimigos ativos a cada 3 segundos.
+    /// </summary>
+    private System.Collections.IEnumerator CalculateActiveEnemiesScoreRoutine()
     {
-        yield return new WaitForSecondsRealtime(delay); // Usa WaitForSecondsRealtime para ignorar Time.timeScale = 0
-        Time.timeScale = 1f; // Volta o tempo ao normal antes de recarregar
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name); // Recarrega a cena atual
+        while (!gameOver)
+        {
+            if (enemySpawner != null)
+            {
+                int normalEnemiesCount = 0;
+                int modifiedEnemiesCount = 0;
+
+                // Percorrer todos os inimigos ativos na cena para classificá-los
+                // Isso assume que todos os inimigos têm a tag "Enemy"
+                GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
+                foreach (GameObject enemyObj in enemies)
+                {
+                    EnemyAI enemy = enemyObj.GetComponent<EnemyAI>();
+                    if (enemy != null)
+                    {
+                        if (enemy.IsInitialType) // Initial é o "normal" inicial
+                        {
+                            normalEnemiesCount++;
+                        }
+                        else // Tudo que não é Initial é "modificado"
+                        {
+                            modifiedEnemiesCount++;
+                        }
+                    }
+                }
+
+                AddScore(normalEnemiesCount * scorePerNormalEnemy);
+                AddScore(modifiedEnemiesCount * scorePerModifiedEnemy);
+            }
+            yield return new WaitForSeconds(3f); // A cada 3 segundos
+        }
     }
 
-    // Você pode adicionar um método para reiniciar o jogo manualmente, talvez de um botão de UI
-    public void RestartGame()
+    /// <summary>
+    /// Corrotina para adicionar pontos com base no tempo de jogo a cada 30 segundos.
+    /// </summary>
+    private System.Collections.IEnumerator CalculateTimeScoreRoutine()
     {
-        Time.timeScale = 1f; // Garante que o tempo está normal
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name); // Recarrega a cena atual
-        isGameOver = false; // Reseta a flag de Game Over
+        while (!gameOver)
+        {
+            yield return new WaitForSeconds(30f); // Espera 30 segundos
+            if (!gameOver) // Verifica novamente, caso o jogo tenha terminado durante a espera
+            {
+                // Calcula quantos "blocos" de 30 segundos já passaram
+                // Poderíamos usar (gameDuration - timeRemaining) para calcular o tempo passado
+                // mas a regra "30 ganha 30" implica em 1 ponto por segundo, contado a cada 30s.
+                // Uma forma mais simples: A cada 30s, adiciona 'scorePer30Seconds' pontos.
+                AddScore(scorePer30Seconds);
+                Debug.Log($"Pontos adicionados por tempo! (Total passado: {(gameDuration - timeRemaining):F0}s)");
+            }
+        }
     }
 }
