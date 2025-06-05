@@ -38,7 +38,7 @@ public class EnemyAI : MonoBehaviour
     [Tooltip("Cor do inimigo tipo Pequeno.")]
     [SerializeField] private Color smallEnemyColor = Color.green;
     [Tooltip("Cor do inimigo tipo Normal.")]
-    [SerializeField] private Color normalEnemyColor = Color.blue; 
+    [SerializeField] private Color normalEnemyColor = Color.blue;
     [Tooltip("Cor do inimigo tipo Grande.")]
     [SerializeField] private Color largeEnemyColor = Color.magenta;
 
@@ -212,11 +212,6 @@ public class EnemyAI : MonoBehaviour
     {
         Debug.Log($"Fusão entre {enemy1.name} ({enemy1.GetEnemyType()}) e {enemy2.name} ({enemy2.GetEnemyType()})");
 
-        // bool isEnemy1Initial = enemy1.IsInitialType; // Já temos na HandleEnemyFusion
-        // bool isEnemy2Initial = enemy2.IsInitialType; // Já temos na HandleEnemyFusion
-
-        // --- HIERARQUIA DE REGRAS ---
-
         // REGRA 1: Dois inimigos do tipo Initial colidem.
         if (enemy1.IsInitialType && enemy2.IsInitialType)
         {
@@ -274,7 +269,7 @@ public class EnemyAI : MonoBehaviour
         EnemyAI loser = null;
 
         // Lógica de Pedra, Papel e Tesoura: Small (Pequeno) > Large (Grande) > Normal (Padrão) > Small
-        
+
         // RE-DEFININDO A LÓGICA DE PPT PARA SUAS VELOCIDADES:
         // Vamos pensar na "força" do inimigo: Pequeno (rápido) > Grande (robusto) > Normal (equilibrado)
         // Pequeno (mais rápido) vence Grande (mais lento)
@@ -310,7 +305,7 @@ public class EnemyAI : MonoBehaviour
             }
         }
 
-            Debug.Log($"REGRA 4: Batalha PPT: {winner.name} ({winner.GetEnemyType()}) venceu {loser.name} ({loser.GetEnemyType()})!");
+        Debug.Log($"REGRA 4: Batalha PPT: {winner.name} ({winner.GetEnemyType()}) venceu {loser.name} ({loser.GetEnemyType()})!");
         Debug.Log($"{loser.name} (Perdedor) se transformará no tipo do vencedor ({winner.GetEnemyType()}).");
 
         ApplyTransformation(loser, winner.GetEnemyType());
@@ -336,17 +331,20 @@ public class EnemyAI : MonoBehaviour
         {
             case EnemyType.Small:
                 enemy.SetScale(smallScale);
-                enemy.SetSpeed(smallEnemySpeed); // Velocidade do Small (4.5f)
+                enemy.SetSpeed(smallEnemySpeed); // Velocidade do Small (4f)
+                AudioManager.Instance.PlaySFX(AudioManager.Instance.fusionToSmallSFX); // Toca o som de fusão
                 Debug.Log($"{enemy.name} agora é Small: Velocidade={enemy.moveSpeed}, Escala={enemy.transform.localScale.x}");
                 break;
             case EnemyType.Normal: // Tipo renomeado para Normal
                 enemy.SetSpeed(normalEnemySpeed); // Velocidade do Normal (3f)
                 enemy.SetScale(initialScale); // Normal mantém escala inicial
+                AudioManager.Instance.PlaySFX(AudioManager.Instance.fusionToNormalSFX); // Toca o som de fusão
                 Debug.Log($"{enemy.name} agora é Normal: Velocidade={enemy.moveSpeed}, Escala={enemy.transform.localScale.x}");
                 break;
             case EnemyType.Large:
                 enemy.SetScale(maxScale);
                 enemy.SetSpeed(largeEnemySpeed); // Velocidade do Large (2.0f)
+                AudioManager.Instance.PlaySFX(AudioManager.Instance.fusionToLargeSFX); // Toca o som de fusão
                 Debug.Log($"{enemy.name} agora é Large: Velocidade={enemy.moveSpeed}, Escala={enemy.transform.localScale.x}");
                 break;
             default:
@@ -371,14 +369,17 @@ public class EnemyAI : MonoBehaviour
             case 0: // Transforma em Pequeno
                 Debug.Log($"{enemy.name} se transformou em Pequeno (por escolha aleatória)!");
                 ApplyTransformation(enemy, EnemyType.Small);
+                AudioManager.Instance.PlaySFX(AudioManager.Instance.fusionToSmallSFX); // Toca o som de fusão
                 break;
             case 1: // Transforma em Normal
                 Debug.Log($"{enemy.name} se transformou em Normal (por escolha aleatória)!");
                 ApplyTransformation(enemy, EnemyType.Normal);
+                AudioManager.Instance.PlaySFX(AudioManager.Instance.fusionToNormalSFX); // Toca o som de fusão
                 break;
             case 2: // Transforma em Grande
                 Debug.Log($"{enemy.name} se transformou em Grande (por escolha aleatória)!");
                 ApplyTransformation(enemy, EnemyType.Large);
+                AudioManager.Instance.PlaySFX(AudioManager.Instance.fusionToLargeSFX); // Toca o som de fusão
                 break;
         }
     }

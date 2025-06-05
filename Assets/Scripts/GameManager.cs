@@ -218,6 +218,10 @@ public class GameManager : MonoBehaviour
                     }
                     Debug.Log("Destruição dos inimigos de presença massiva concluída."); // NOVO LOG
 
+                    if (AudioManager.Instance != null)
+                    {
+                        AudioManager.Instance.PlaySFX(AudioManager.Instance.massPresenceDestroySFX); // Toca o som de fusão
+                    }
                     // Diminuir o tempo de spawn
                     if (enemySpawner != null)
                     {
