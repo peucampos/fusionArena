@@ -993,6 +993,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sfxAudioSource: {fileID: 0}
+  musicAudioSource: {fileID: 0}
+  backgroundMusicClip: {fileID: 8300000, guid: a90db7f1e8401d343ae4e3d73db3d10d, type: 3}
+  backgroundMusicVolume: 0.1
   fusionToNormalSFX: {fileID: 8300000, guid: 535126422d868c849940490f167f16ab, type: 3}
   fusionToLargeSFX: {fileID: 8300000, guid: 8e9b7d776a2cb9342a4d075849ba33cf, type: 3}
   fusionToSmallSFX: {fileID: 8300000, guid: 87a9ec14fed2a494ba6e03ca87d08ce5, type: 3}
