@@ -372,6 +372,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemyPrefab: {fileID: 2303886399090092685, guid: b9be9b00a3d32024985f632daecb5a3c, type: 3}
   spawnInterval: 3
+  minSpawnInterval: 1
   enemiesPerSpawn: 1
   spawnPoints:
   - {fileID: 1802826575}
@@ -379,6 +380,7 @@ MonoBehaviour:
   - {fileID: 1764490864}
   - {fileID: 1430835107}
   maxEnemies: 50
+  initialEnemyScale: 1
 --- !u!4 &233653217
 Transform:
   m_ObjectHideFlags: 0
@@ -411,9 +413,10 @@ MonoBehaviour:
   scorePerModifiedEnemy: 2
   scorePerFusion: 3
   scorePerModifiedDestroyingModified: 4
-  scorePer30Seconds: 30
-  enemySpawner: {fileID: 233653216}
-  score: {fileID: 482576808}
+  minEnemiesForMassPresence: 5
+  scoreForMassPresence: 30
+  massPresenceCheckInterval: 0.5
+  spawnDecreaseAmount: 0.25
 --- !u!1 &242341863
 GameObject:
   m_ObjectHideFlags: 0

@@ -168,10 +168,8 @@ MonoBehaviour:
   normalEnemySpeed: 3
   smallEnemySpeed: 4
   largeEnemySpeed: 2
-  largeThresholdSpeed: 2.5
   largeThresholdScale: 1.1
   smallThresholdSpeed: 3.5
-  smallThresholdScale: 0.9
   initialEnemyColor: {r: 0, g: 1, b: 1, a: 1}
   smallEnemyColor: {r: 0.54509807, g: 1, b: 0, a: 1}
   normalEnemyColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
@@ -179,3 +177,5 @@ MonoBehaviour:
   maxScale: 1.5
   smallScale: 0.75
   initialScale: 1
+  minEnemiesForMassTransformation: 3
+  scoreForMassTransformation: 30

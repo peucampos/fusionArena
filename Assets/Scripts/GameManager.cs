@@ -1,27 +1,39 @@
-using TMPro;
 using UnityEngine;
-using UnityEngine.SceneManagement; // Certifique-se de que esta linha está presente
+using UnityEngine.SceneManagement;
+using System.Collections;
+using System.Collections.Generic;
+using TMPro;
 
 public class GameManager : MonoBehaviour
 {
-    // Singleton pattern
     public static GameManager Instance { get; private set; }
 
     [Header("Configurações do Jogo")]
     private bool gameStarted = false;
     private bool gameOver = false;
 
-    // Variáveis de pontuação
+    // ... (Variáveis de pontuação existentes)
     [Header("Configurações de Pontuação")]
-    public int currentScore = 0; // Variável para armazenar a pontuação total
-    public int scorePerNormalEnemy = 1; // Pontos por inimigo normal ativo
-    public int scorePerModifiedEnemy = 2; // Pontos por inimigo modificado ativo
-    public int scorePerFusion = 3; // Pontos por fusão
-    public int scorePerModifiedDestroyingModified = 4; // Pontos por modificado destruir modificado
-    public int scorePer30Seconds = 30; // Pontos a cada 30 segundos (1 ponto por segundo de jogo a cada 30 segundos)
+    public int currentScore = 0;
+    public int scorePerNormalEnemy = 1;
+    public int scorePerModifiedEnemy = 2;
+    public int scorePerFusion = 3;
+    public int scorePerModifiedDestroyingModified = 4;
 
-    [SerializeField] private EnemySpawner enemySpawner; // Referência ao EnemySpawner
-    [SerializeField] private TMP_Text score; // Referência ao componente de texto para exibir a pontuação
+    // Nova regra: Presença Massiva de Inimigos (AGORA COM DIMINUIÇÃO DE TEMPO DE SPAWN)
+    [Header("Nova Regra: Presença Massiva de Inimigos")]
+    [Tooltip("Número mínimo de inimigos do mesmo tipo (modificado) na tela para ativá-lo.")]
+    [SerializeField] private int minEnemiesForMassPresence = 5;
+    [Tooltip("Pontos concedidos pela ativação da regra de presença massiva.")]
+    [SerializeField] private int scoreForMassPresence = 30;
+    [Tooltip("Intervalo de tempo para verificar a presença massiva de inimigos.")]
+    [SerializeField] private float massPresenceCheckInterval = 1f;
+    [Tooltip("Quantidade em segundos que o tempo de spawn diminui quando a regra é ativada.")]
+    [SerializeField] private float spawnDecreaseAmount = 0.25f; // NOVO: Quantidade de diminuição
+
+    private EnemySpawner enemySpawner;
+
+    [SerializeField] private TMP_Text score;
 
     private void Awake()
     {
@@ -32,7 +44,15 @@ public class GameManager : MonoBehaviour
         else
         {
             Instance = this;
+            // DontDestroyOnLoad(gameObject);
         }
+
+        enemySpawner = GetComponent<EnemySpawner>(); // Tenta obter o EnemySpawner do mesmo GameObject
+        if (enemySpawner == null)
+        {
+            Debug.LogError("EnemySpawner component não encontrado NO MESMO GameObject do GameManager! Certifique-se de que o script EnemySpawner está anexado a este GameObject.", this);
+        }
+
     }
 
     private void Start()
@@ -44,48 +64,38 @@ public class GameManager : MonoBehaviour
     {
         gameStarted = true;
         gameOver = false;
-        currentScore = 0; // Reseta a pontuação ao iniciar o jogo
+        currentScore = 0;
 
-        // Inicia as corrotinas de pontuação
         StartCoroutine(CalculateActiveEnemiesScoreRoutine());
-        StartCoroutine(CalculateTimeScoreRoutine());
+        StartCoroutine(CheckForMassEnemyPresenceRoutine());
     }
 
     private void Update()
     {
         if (!gameStarted || gameOver) return;
 
-        score.text = currentScore.ToString(); // Atualiza o texto da pontuação
+        score.text = currentScore.ToString();
     }
 
     public void GameOver()
     {
-        if (gameOver) return; // Evita múltiplas chamadas
+        if (gameOver) return;
 
         gameOver = true;
         Debug.Log("Game Over! Sua pontuação final: " + currentScore);
-        
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
-    /// <summary>
-    /// Adiciona pontos à pontuação total.
-    /// </summary>
-    /// <param name="points">Quantidade de pontos a adicionar.</param>
     public void AddScore(int points)
     {
         if (!gameOver)
         {
             currentScore += points;
-            Debug.Log($"Pontuação atual: {currentScore}"); // Para debug
-            // Futuramente, você pode atualizar a UI aqui
+            Debug.Log($"Pontuação atual: {currentScore}");
         }
     }
 
-    /// <summary>
-    /// Corrotina para calcular e adicionar pontos de inimigos ativos a cada 3 segundos.
-    /// </summary>
-    private System.Collections.IEnumerator CalculateActiveEnemiesScoreRoutine()
+    private IEnumerator CalculateActiveEnemiesScoreRoutine()
     {
         while (!gameOver)
         {
@@ -94,19 +104,17 @@ public class GameManager : MonoBehaviour
                 int normalEnemiesCount = 0;
                 int modifiedEnemiesCount = 0;
 
-                // Percorrer todos os inimigos ativos na cena para classificá-los
-                // Isso assume que todos os inimigos têm a tag "Enemy"
                 GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
                 foreach (GameObject enemyObj in enemies)
                 {
                     EnemyAI enemy = enemyObj.GetComponent<EnemyAI>();
                     if (enemy != null)
                     {
-                        if (enemy.IsInitialType) // Initial é o "normal" inicial
+                        if (enemy.IsInitialType)
                         {
                             normalEnemiesCount++;
                         }
-                        else // Tudo que não é Initial é "modificado"
+                        else
                         {
                             modifiedEnemiesCount++;
                         }
@@ -116,26 +124,120 @@ public class GameManager : MonoBehaviour
                 AddScore(normalEnemiesCount * scorePerNormalEnemy);
                 AddScore(modifiedEnemiesCount * scorePerModifiedEnemy);
             }
-            yield return new WaitForSeconds(3f); // A cada 3 segundos
+            yield return new WaitForSeconds(3f);
         }
     }
 
     /// <summary>
-    /// Corrotina para adicionar pontos com base no tempo de jogo a cada 30 segundos.
+    /// Corrotina para verificar periodicamente a presença massiva de inimigos do mesmo tipo.
     /// </summary>
-    private System.Collections.IEnumerator CalculateTimeScoreRoutine()
+    private IEnumerator CheckForMassEnemyPresenceRoutine()
     {
+        Debug.Log("CheckForMassEnemyPresenceRoutine: Iniciada."); // Adicione esta linha
         while (!gameOver)
         {
-            yield return new WaitForSeconds(30f); // Espera 30 segundos
-            if (!gameOver) // Verifica novamente, caso o jogo tenha terminado durante a espera
+            yield return new WaitForSeconds(massPresenceCheckInterval);
+
+            if (gameOver)
             {
-                // Calcula quantos "blocos" de 30 segundos já passaram
-                // Poderíamos usar (gameDuration - timeRemaining) para calcular o tempo passado
-                // mas a regra "30 ganha 30" implica em 1 ponto por segundo, contado a cada 30s.
-                // Uma forma mais simples: A cada 30s, adiciona 'scorePer30Seconds' pontos.
-                AddScore(scorePer30Seconds);
+                Debug.Log("CheckForMassEnemyPresenceRoutine: Jogo terminou, rotina parada."); // Adicione esta linha
+                break;
+            }
+
+            Debug.Log($"CheckForMassEnemyPresenceRoutine: Verificando inimigos ativos. (Intervalo: {massPresenceCheckInterval}s)"); // Adicione esta linha
+
+            Dictionary<EnemyAI.EnemyType, List<EnemyAI>> modifiedEnemiesByType = new Dictionary<EnemyAI.EnemyType, List<EnemyAI>>();
+
+            GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
+
+            Debug.Log($"CheckForMassEnemyPresenceRoutine: Encontrados {enemies.Length} GameObjects com a tag 'Enemy'."); // Adicione esta linha
+
+            foreach (GameObject enemyObj in enemies)
+            {
+                EnemyAI enemy = enemyObj.GetComponent<EnemyAI>();
+                if (enemy != null) // Verifique se o componente EnemyAI existe
+                {
+                    // Debug.Log($"Inimigo encontrado: {enemyObj.name}, IsInitialType: {enemy.IsInitialType}, Type: {enemy.GetEnemyType()}"); // Detalhado, pode gerar muitos logs
+
+                    if (!enemy.IsInitialType) // Apenas inimigos MODIFICADOS são contados
+                    {
+                        EnemyAI.EnemyType type = enemy.GetEnemyType();
+                        // Embora o !enemy.IsInitialType já filtre, uma redundância para clareza
+                        if (type != EnemyAI.EnemyType.Initial)
+                        {
+                            if (!modifiedEnemiesByType.ContainsKey(type))
+                            {
+                                modifiedEnemiesByType.Add(type, new List<EnemyAI>());
+                            }
+                            modifiedEnemiesByType[type].Add(enemy);
+                        }
+                    }
+                }
+                else
+                {
+                    // Debug.LogWarning($"GameObject '{enemyObj.name}' com tag 'Enemy' mas sem componente EnemyAI."); // Pode ajudar a achar erros de tag
+                }
+            }
+
+            // --- Adicione estas linhas para ver as contagens ---
+            if (modifiedEnemiesByType.Count == 0)
+            {
+                Debug.Log("CheckForMassEnemyPresenceRoutine: Nenhum inimigo modificado encontrado nesta checagem.");
+            }
+            foreach (var entry in modifiedEnemiesByType)
+            {
+                Debug.Log($"CheckForMassEnemyPresenceRoutine: Tipo {entry.Key} - Contagem: {entry.Value.Count}");
+            }
+            // --- Fim das novas linhas de contagem ---
+
+            foreach (var entry in modifiedEnemiesByType)
+            {
+                EnemyAI.EnemyType type = entry.Key;
+                List<EnemyAI> enemiesOfThisType = entry.Value;
+
+                if (enemiesOfThisType.Count >= minEnemiesForMassPresence)
+                {
+                    Debug.Log($"Regra de Presença Massiva ATIVADA! {enemiesOfThisType.Count} inimigos do tipo {type} na tela.");
+
+                    Debug.Log("Iniciando destruição dos inimigos de presença massiva..."); // NOVO LOG
+                    foreach (EnemyAI enemyToDestroy in enemiesOfThisType)
+                    {
+                        if (enemyToDestroy != null && enemyToDestroy.gameObject.activeInHierarchy)
+                        {
+                            Debug.Log($"Tentando destruir inimigo: {enemyToDestroy.name} (Tipo: {enemyToDestroy.GetEnemyType()})"); // NOVO LOG
+                            enemySpawner.EnemyDeactivated(); // Decrementa a contagem de inimigos ativos no spawner
+                            Destroy(enemyToDestroy.gameObject);
+                            // A destruição não é instantânea. O objeto será destruído no final do frame.
+                            // Para depuração, você pode verificar se ele ainda existe *neste frame*.
+                            // Mas o importante é que no próximo frame ele deve sumir.
+                        }
+                        else
+                        {
+                            Debug.LogWarning($"Inimigo para destruir é nulo ou inativo na lista: {enemyToDestroy?.name ?? "Nulo/Destruído Externamente"}"); // NOVO LOG para casos estranhos
+                        }
+                    }
+                    Debug.Log("Destruição dos inimigos de presença massiva concluída."); // NOVO LOG
+
+                    // Diminuir o tempo de spawn
+                    if (enemySpawner != null)
+                    {
+                        enemySpawner.DecreaseSpawnInterval(spawnDecreaseAmount);
+                        Debug.Log($"Chamando DecreaseSpawnInterval no EnemySpawner."); // NOVO LOG
+                    }
+                    else
+                    {
+                        Debug.LogWarning("EnemySpawner não encontrado para diminuir o tempo de spawn."); // Este já existia
+                    }
+
+                    // Adicionar pontos ao jogador
+                    AddScore(scoreForMassPresence);
+                    Debug.Log($"Pontos por presença massiva: +{scoreForMassPresence}. Pontuação total: {currentScore}"); // ATUALIZADO: Mostra total
+
+                    break; // IMPORTANTE: Saia do loop após ativar a regra para evitar ativações múltiplas no mesmo frame
+                           
+                }
             }
         }
     }
+
 }
