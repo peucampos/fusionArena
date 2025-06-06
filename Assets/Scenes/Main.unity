@@ -590,7 +590,7 @@ MonoBehaviour:
   massPresenceCheckInterval: 0.5
   spawnDecreaseAmount: 0.25
   score: {fileID: 482576808}
-  tryAgain: {fileID: 10489086}
+  tryAgainBtn: {fileID: 10489086}
 --- !u!1 &242341863
 GameObject:
   m_ObjectHideFlags: 0
