@@ -395,9 +395,6 @@ public class EnemyAI : MonoBehaviour
         // ele ainda pode ser aplicado aqui. Caso contrário, esta linha pode ser removida.
         // Por exemplo, se você *sempre* quer que a velocidade seja exatamente a definida para o tipo:
         moveSpeed = newSpeed;
-
-        // Se você QUER um limite global, mantenha a linha abaixo:
-        // moveSpeed = Mathf.Min(newSpeed, GameManager.globalMaxEnemySpeed);
     }
 
     /// <summary>

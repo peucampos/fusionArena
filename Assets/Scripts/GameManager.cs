@@ -34,6 +34,7 @@ public class GameManager : MonoBehaviour
     private EnemySpawner enemySpawner;
 
     [SerializeField] private TMP_Text score;
+    [SerializeField] private GameObject tryAgainBtn;
 
     private void Awake()
     {
@@ -80,9 +81,18 @@ public class GameManager : MonoBehaviour
     public void GameOver()
     {
         if (gameOver) return;
-
+        
         gameOver = true;
         Debug.Log("Game Over! Sua pontuação final: " + currentScore);
+        tryAgainBtn.SetActive(true);
+        Time.timeScale = 0;
+        //SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    public void TryAgain()
+    {
+        tryAgainBtn.SetActive(false);
+        Time.timeScale = 1;
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
