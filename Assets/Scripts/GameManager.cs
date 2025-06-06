@@ -15,6 +15,7 @@ public class GameManager : MonoBehaviour
     // ... (Variáveis de pontuação existentes)
     [Header("Configurações de Pontuação")]
     public int currentScore = 0;
+    public int currentLevel = 1;
     public int scorePerNormalEnemy = 1;
     public int scorePerModifiedEnemy = 2;
     public int scorePerFusion = 3;
@@ -35,6 +36,7 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] private TMP_Text score;
     [SerializeField] private GameObject tryAgainBtn;
+    [SerializeField] private TMP_Text level;
 
     private void Awake()
     {
@@ -76,6 +78,7 @@ public class GameManager : MonoBehaviour
         if (!gameStarted || gameOver) return;
 
         score.text = currentScore.ToString();
+        level.text = currentLevel.ToString();
     }
 
     public void GameOver()
@@ -183,13 +186,8 @@ public class GameManager : MonoBehaviour
                         }
                     }
                 }
-                else
-                {
-                    // Debug.LogWarning($"GameObject '{enemyObj.name}' com tag 'Enemy' mas sem componente EnemyAI."); // Pode ajudar a achar erros de tag
-                }
             }
 
-            // --- Adicione estas linhas para ver as contagens ---
             if (modifiedEnemiesByType.Count == 0)
             {
                 Debug.Log("CheckForMassEnemyPresenceRoutine: Nenhum inimigo modificado encontrado nesta checagem.");

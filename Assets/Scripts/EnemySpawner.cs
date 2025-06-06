@@ -49,6 +49,7 @@ public class EnemySpawner : MonoBehaviour
     {
         spawnInterval = Mathf.Max(spawnInterval - amount, minSpawnInterval);
         Debug.Log($"Intervalo de Spawn Diminuído para: {spawnInterval:F2}s");
+        GameManager.Instance.currentLevel++;
 
         // É crucial reiniciar a corrotina para que ela use o novo intervalo
         StopAllCoroutines(); // Para a corrotina atual
