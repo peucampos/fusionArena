@@ -84,7 +84,7 @@ public class GameManager : MonoBehaviour
     public void GameOver()
     {
         if (gameOver) return;
-        
+
         gameOver = true;
         Debug.Log("Game Over! Sua pontuação final: " + currentScore);
         tryAgainBtn.SetActive(true);
@@ -97,6 +97,13 @@ public class GameManager : MonoBehaviour
         tryAgainBtn.SetActive(false);
         Time.timeScale = 1;
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    public void Pause()
+    { 
+        if (gameOver) return;
+
+        Time.timeScale = Time.timeScale == 0 ? 1 : 0;
     }
 
     public void AddScore(int points)
@@ -246,7 +253,7 @@ public class GameManager : MonoBehaviour
                     Debug.Log($"Pontos por presença massiva: +{scoreForMassPresence}. Pontuação total: {currentScore}"); // ATUALIZADO: Mostra total
 
                     break; // IMPORTANTE: Saia do loop após ativar a regra para evitar ativações múltiplas no mesmo frame
-                           
+
                 }
             }
         }

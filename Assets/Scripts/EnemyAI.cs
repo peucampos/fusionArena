@@ -49,6 +49,9 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] private float smallScale = 0.75f;
     [SerializeField] private float initialScale = 1f; // Escala padrão para inimigos recém-criados ou não modificados
 
+    [Header("Efeitos")] 
+    [Tooltip("Prefab do sistema de partículas para o efeito de fusão.")]
+    [SerializeField] private GameObject mergeEffectPrefab; 
 
     public enum EnemyType
     {
@@ -181,6 +184,7 @@ public class EnemyAI : MonoBehaviour
         {
             this.SetMergingState(true);
             otherEnemy.SetMergingState(true);
+
             HandleEnemyFusion(this, otherEnemy);
         }
         else if (collision.gameObject.CompareTag("Player"))
@@ -218,12 +222,13 @@ public class EnemyAI : MonoBehaviour
             Debug.Log("REGRA 1: Dois inimigos iniciais colidiram! Um se transforma, o outro é desativado/reciclado.");
             EnemyAI transformedEnemy = (Random.value > 0.5f) ? enemy1 : enemy2;
             EnemyAI deactivatedEnemy = (transformedEnemy == enemy1) ? enemy2 : enemy1;
-
+            
             if (enemySpawner != null)
             {
                 enemySpawner.EnemyDeactivated();
             }
             deactivatedEnemy.gameObject.SetActive(false);
+            ExplosionEffect(transformedEnemy);
 
             transformedEnemy.IsInitialType = false; // MUITO IMPORTANTE: Garante que nunca mais será Initial
 
@@ -309,11 +314,26 @@ public class EnemyAI : MonoBehaviour
         Debug.Log($"{loser.name} (Perdedor) se transformará no tipo do vencedor ({winner.GetEnemyType()}).");
 
         ApplyTransformation(loser, winner.GetEnemyType());
+        
+        ExplosionEffect(loser);
 
         winner.SetMergingState(false, 0.8f);
         loser.SetMergingState(false, 0.8f);
 
         return;
+    }
+
+    private void ExplosionEffect(EnemyAI enemy)
+    {
+        GameObject effectGO = Instantiate(mergeEffectPrefab, enemy.transform.position, Quaternion.identity);
+        ParticleSystem ps = effectGO.GetComponent<ParticleSystem>();
+
+        if (ps != null)
+        {
+            var main = ps.main;
+            // A cor já foi atualizada em ApplyTransformation -> UpdateEnemyColor()
+            main.startColor = new ParticleSystem.MinMaxGradient(enemy.spriteRenderer.color);
+        }
     }
 
     /// <summary>

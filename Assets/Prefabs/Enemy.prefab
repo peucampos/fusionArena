@@ -177,3 +177,4 @@ MonoBehaviour:
   maxScale: 1.5
   smallScale: 0.75
   initialScale: 1
+  mergeEffectPrefab: {fileID: 2022901981763321622, guid: b36a6b9786ba1b642b7991f26e206d75, type: 3}
